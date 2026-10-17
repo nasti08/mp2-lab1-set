@@ -16,7 +16,7 @@ TEST(TSet, can_insert_non_existing_element)
   TSet set(size);
   set.InsElem(k);
 
-  EXPECT_NE(set.IsMember(k), 0);
+  EXPECT_NE(set.IsMember(k), 0); 
 }
 
 TEST(TSet, can_insert_existing_element)
@@ -294,4 +294,59 @@ TEST(TSet, check_negation_operator)
   expSet.InsElem(2);
 
   EXPECT_EQ(expSet, set1);
+}
+
+// TESTS
+
+TEST(TSet, chain_combination_and_empty_complement) {
+  TSet x(6), y(6), z(6); x.InsElem(1); y.InsElem(3); z.InsElem(5);
+  TSet res = x + y + z;
+  EXPECT_EQ(1, res.IsMember(1)); EXPECT_EQ(1, res.IsMember(3)); EXPECT_EQ(1, res.IsMember(5)); EXPECT_EQ(0, res.IsMember(2));
+  TSet v(0);
+  TSet res1 = v + v;
+  EXPECT_EQ(v, res1);
+  EXPECT_EQ(v, ~v);
+}
+
+TEST(TSet, element_operations_preserve_source) {
+  TSet x(8); x.InsElem(4);
+  TSet y = x - 4;
+  EXPECT_EQ(0, y.IsMember(4));
+  EXPECT_EQ(1, x.IsMember(4));
+  TSet z = x + 6;
+  EXPECT_EQ(1, z.IsMember(6));
+  EXPECT_EQ(0, x.IsMember(6));
+}
+
+TEST(TSet, chain_intersection_and_empty_complement) {
+  TSet x(6), y(6), z(6);
+  x.InsElem(1); x.InsElem(2); x.InsElem(4); x.InsElem(5);
+  y.InsElem(2); y.InsElem(3); y.InsElem(4); y.InsElem(5);
+  z.InsElem(3); z.InsElem(5);
+  TSet res = x * y * z;
+  TSet target(6); target.InsElem(5);
+  EXPECT_EQ(res, target);
+  TSet v(0);
+  TSet res1 = v * v;
+  EXPECT_EQ(v, res1);
+}
+
+TEST(TSet, sample_prime_numbers) {
+  int p, q, w;
+  p = 30;
+  TSet x(p + 1);
+  for (q = 2; q <= p; q++)
+    x.InsElem(q);
+  for (q = 2; q * q <= p; q++)
+      if (x.IsMember(q))
+        for (w = 2 * q; w <= p; w += q)
+          if (x.IsMember(w))
+            x.DelElem(w);
+
+  TSet y(31);
+  int arr[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
+  for (int i = 0; i < 10; i++)
+    y.InsElem(arr[i]);
+
+  EXPECT_EQ(y, x);
 }

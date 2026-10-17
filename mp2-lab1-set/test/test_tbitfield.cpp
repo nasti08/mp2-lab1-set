@@ -309,3 +309,66 @@ TEST(TBitField, bitfields_with_different_bits_are_not_equal)
 
   EXPECT_NE(bf1, bf2);
 }
+
+// TESTS
+
+TEST(TBitField, copy_is_independent_and_assignment_returns_self) {
+  TBitField x(85); x.SetBit(42);
+  TBitField y(x);
+  EXPECT_EQ(x, y);
+  y.ClrBit(42);
+  EXPECT_EQ(1, x.GetBit(42));
+  EXPECT_EQ(&x, &(x = x));
+  EXPECT_EQ(1, x.GetBit(42));
+  EXPECT_EQ(&y, &(y = x));
+  y.ClrBit(42);
+  EXPECT_EQ(1, x.GetBit(42));
+}
+
+TEST(TBitField, double_inversion_returns_the_original) {
+  TBitField x(45);
+  TBitField y(45);
+  x.SetBit(21);
+  y = ~x;
+  y = ~y;
+  EXPECT_EQ(y, x);
+  EXPECT_EQ(x, ~~x);
+}
+
+TEST(TBitField, repeated_clear_and_chained_operations) {
+  TBitField x(8), y(8), z(8);
+  x.SetBit(3); y.SetBit(5); z.SetBit(7);
+  TBitField res = x | y | z;
+  EXPECT_EQ(1, res.GetBit(3)); EXPECT_EQ(1, res.GetBit(5)); EXPECT_EQ(1, res.GetBit(7));
+  x.ClrBit(3); x.ClrBit(3); EXPECT_EQ(0, x.GetBit(3));
+}
+
+TEST(TBitFieldExtra, can_create_and_invert_empty_field_and_cant_get_bit_from_empty_field)
+{
+  TBitField v(0);
+  EXPECT_EQ(0, (~v).GetLength());
+  EXPECT_EQ(v, ~v);
+  ASSERT_ANY_THROW(v.GetBit(0));
+}
+
+TEST(TBitFieldExtra, sample_prime_numbers) {
+  int p, q, w;
+  p = 30;
+  TBitField x(p + 1);
+  
+  for (q = 2; q <= p; q++)
+    x.SetBit(q);
+    
+  for (q = 2; q * q <= p; q++)
+      if (x.GetBit(q))
+        for (w = 2 * q; w <= p; w += q)
+          if (x.GetBit(w))
+            x.ClrBit(w);
+
+  TBitField y(p + 1);
+  int arr[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
+  for (int i = 0; i < 10; i++)
+    y.SetBit(arr[i]);
+
+  EXPECT_EQ(y, x);
+}
